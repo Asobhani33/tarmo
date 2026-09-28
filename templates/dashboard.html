@@ -1,0 +1,26 @@
+<!--
+dashboard.html
+---------------
+Owner: Person 3 (design) — shows boards prepared by Person 1's dashboard() route
+
+PLACEHOLDER — `boards` is a list of board documents from Mongo, each with
+a "name" and "_id". Loop over them and link each to its board page.
+-->
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+    <h1>Your Boards</h1>
+
+    <form method="POST" action="{{ url_for('boards.create_board') }}">
+        <input type="text" name="name" placeholder="New board name" required>
+        <button type="submit">Create Board</button>
+    </form>
+
+    <ul>
+        {% for board in boards %}
+            <li>
+                <a href="{{ url_for('boards.view_board', board_id=board._id) }}">{{ board.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

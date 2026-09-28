@@ -1,0 +1,37 @@
+<!--
+base.html
+----------
+Owner: Person 3
+
+PLACEHOLDER layout — replace this with the real design (Tailwind CDN,
+navbar, colors, etc). Every other template extends this one with
+{% extends "base.html" %} so this is the single place that controls the
+overall look (fonts, background, header) across the whole site.
+
+TASK FOR PERSON 3:
+    1. Add the Tailwind CDN script tag in <head>
+    2. Design a simple top navbar (logo/name + "Dashboard" + "Logout" links)
+    3. Keep the {% block content %} block - that's where each page's own
+       content gets inserted
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Trello Clone{% endblock %}</title>
+    <!-- TODO (Person 3): add Tailwind CDN script here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- TODO (Person 3): replace with a real navbar -->
+    <header>
+        <strong>Trello Clone</strong>
+        <a href="{{ url_for('boards.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

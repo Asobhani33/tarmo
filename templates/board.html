@@ -1,0 +1,43 @@
+<!--
+board.html
+-----------
+Owner: Person 3 (design) — the main board view: lists as columns, cards
+inside each list. This is where the drag-and-drop (Person 4) attaches.
+
+PLACEHOLDER — `lists` comes from Person 1's view_board() route. Each list's
+cards should be fetched with Person 2's get_cards_for_list(list._id) helper
+(Person 1 will likely pass cards into the template context per list, or you
+call an endpoint - coordinate with Person 1/2 on the exact wiring).
+
+TASK FOR PERSON 3 + PERSON 4:
+    - Style each list as a column (Tailwind flex/grid)
+    - Give each card a `data-card-id="{{ card._id }}"` attribute and each
+      list a `data-list-id="{{ list._id }}"` attribute — Person 4's
+      drag_drop.js needs these to know what moved where
+-->
+{% extends "base.html" %}
+{% block title %}{{ board.name }}{% endblock %}
+{% block content %}
+    <h1>{{ board.name }}</h1>
+
+    <form method="POST" action="{{ url_for('boards.create_list', board_id=board._id) }}">
+        <input type="text" name="name" placeholder="New list name" required>
+        <button type="submit">Add List</button>
+    </form>
+
+    <div class="board-columns">
+        {% for list in lists %}
+            <div class="list-column" data-list-id="{{ list._id }}">
+                <h3>{{ list.name }}</h3>
+                <!-- TODO (Person 2/3): loop over this list's cards here -->
+                <form method="POST" action="{{ url_for('cards.create_card') }}">
+                    <input type="hidden" name="list_id" value="{{ list._id }}">
+                    <input type="text" name="title" placeholder="New card title" required>
+                    <button type="submit">Add Card</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/drag_drop.js') }}"></script>
+{% endblock %}

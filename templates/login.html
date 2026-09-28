@@ -1,0 +1,24 @@
+<!--
+login.html
+-----------
+Owner: Person 3 (design) — reads data prepared by Person 1's login() route
+
+PLACEHOLDER — replace with a styled login form. Keep the <form> action,
+method, and input "name" attributes exactly as they are (Person 1's route
+reads request.form["username"] / request.form["password"]).
+-->
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    <h1>Login</h1>
+    <form method="POST" action="{{ url_for('auth.login') }}">
+        <label>Username</label>
+        <input type="text" name="username" required>
+
+        <label>Password</label>
+        <input type="password" name="password" required>
+
+        <button type="submit">Log In</button>
+    </form>
+    <p>No account? <a href="{{ url_for('auth.register') }}">Register</a></p>
+{% endblock %}

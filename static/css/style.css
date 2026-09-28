@@ -1,0 +1,39 @@
+/*
+style.css
+----------
+Owner: Person 3
+
+PLACEHOLDER — minimal styling just so the app is readable during
+development. Replace with your real design (or delete this file entirely
+if you go all-in on Tailwind utility classes instead).
+*/
+
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    padding: 12px 20px;
+    background: #f1f1f1;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+main {
+    padding: 20px;
+}
+
+.board-columns {
+    display: flex;
+    gap: 16px;
+}
+
+.list-column {
+    background: #f4f4f4;
+    padding: 12px;
+    border-radius: 8px;
+    min-width: 220px;
+}
