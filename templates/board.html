@@ -15,29 +15,65 @@ TASK FOR PERSON 3 + PERSON 4:
       list a `data-list-id="{{ list._id }}"` attribute — Person 4's
       drag_drop.js needs these to know what moved where
 -->
-{% extends "base.html" %}
-{% block title %}{{ board.name }}{% endblock %}
-{% block content %}
-    <h1>{{ board.name }}</h1>
+{% extends "base.html" %} {% block title %}{{ board.name }}{% endblock %} {%
+block content %}
+<h1 class="text-2xl font-bold mb-6">{{ board.name }}</h1>
 
-    <form method="POST" action="{{ url_for('boards.create_list', board_id=board._id) }}">
-        <input type="text" name="name" placeholder="New list name" required>
-        <button type="submit">Add List</button>
+<form
+  class="flex flex-col sm:flex-row gap-3 mb-8"
+  method="POST"
+  action="{{ url_for('boards.create_list', board_id=board._id) }}"
+>
+  <input
+    class="border rounded px-3 py-2 w-full sm:w-64"
+    type="text"
+    name="name"
+    placeholder="New list name"
+    required
+  />
+
+  <button
+    class="bg-blue-800 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
+    type="submit"
+  >
+    Add List
+  </button>
+</form>
+
+<div class="flex gap-5 overflow-x-auto pb-4">
+  {% for list in lists %}
+
+  <div
+    class="w-72 shrink-0 bg-gray-100 border rounded-xl p-4 shadow-sm"
+    data-list-id="{{ list._id }}"
+  >
+    <h3 class="font-semibold text-lg mb-4">{{ list.name }}</h3>
+    <!-- TODO (Person 2/3): loop over this list's cards here -->
+    <form
+      class="flex flex-col gap-2 mt-4"
+      method="POST"
+      action="{{ url_for('cards.create_card') }}"
+    >
+      <input type="hidden" name="list_id" value="{{ list._id }}" />
+
+      <input
+        class="border rounded-lg px-3 py-2 w-full"
+        type="text"
+        name="title"
+        placeholder="New card title"
+        required
+      />
+
+      <button
+        class="w-full bg-blue-800 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+        type="submit"
+      >
+        Add Card
+      </button>
     </form>
+  </div>
+  {% endfor %}
+</div>
 
-    <div class="board-columns">
-        {% for list in lists %}
-            <div class="list-column" data-list-id="{{ list._id }}">
-                <h3>{{ list.name }}</h3>
-                <!-- TODO (Person 2/3): loop over this list's cards here -->
-                <form method="POST" action="{{ url_for('cards.create_card') }}">
-                    <input type="hidden" name="list_id" value="{{ list._id }}">
-                    <input type="text" name="title" placeholder="New card title" required>
-                    <button type="submit">Add Card</button>
-                </form>
-            </div>
-        {% endfor %}
-    </div>
-
-    <script src="{{ url_for('static', filename='js/drag_drop.js') }}"></script>
+<script src="{{ url_for('static', filename='js/drag_drop.js') }}"></script>
 {% endblock %}
