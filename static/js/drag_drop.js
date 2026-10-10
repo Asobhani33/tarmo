@@ -6,51 +6,86 @@
  * Drag-and-drop for cards between lists, using the SortableJS library,
  * connected to Person 2's /card/<card_id>/move endpoint.
  *
- * SETUP:
- *   1. Add SortableJS via CDN in base.html (Person 3 coordinates this):
- *      <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
- *   2. This file runs after the page loads and turns every `.list-column`
- *      into a drop zone that cards can move between.
+ * WHAT THE HTML NEEDS (board.html, Person 3):
+ *   - SortableJS loaded BEFORE this file (in base.html):
+ *       <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+ *   - One element per list with class "list-column" and the list's id:
+ *       <div class="list-column" data-list-id="{{ list._id }}"> ... </div>
+ *   - Every card inside it with the card's id:
+ *       <div class="card" data-card-id="{{ card._id }}"> ... </div>
  *
- * TASK FOR PERSON 4:
- *   1. Select all elements with class "list-column" (one per Mongo list)
- *   2. For each one, create a `new Sortable(element, {...})` that:
- *        - shares a "group" name across all lists (so cards can move
- *          between them, not just reorder within one)
- *        - has an `onEnd` callback that fires when a card is dropped
- *   3. In onEnd, read:
- *        - evt.item.dataset.cardId       (which card moved)
- *        - evt.to.dataset.listId           (which list it was dropped into)
- *   4. Send that to the backend with fetch():
- *        fetch(`/card/${cardId}/move`, {
- *          method: "POST",
- *          headers: { "Content-Type": "application/json" },
- *          body: JSON.stringify({ new_list_id: newListId })
- *        })
- *   5. Handle the response (e.g. log an error and revert the UI if it fails)
+ * HOW IT WORKS:
+ *   1. Every .list-column becomes a Sortable drop zone. They all share the
+ *      group name "cards", so a card can move from one list to another.
+ *   2. Only elements with data-card-id can be dragged, so headers or
+ *      "add card" forms inside a column stay where they are.
+ *   3. When a card is dropped in a DIFFERENT list, we POST the new list id
+ *      to /card/<card_id>/move.
+ *   4. If the server says no (or the request fails), the card is put back
+ *      where it was, so the page never shows something the database doesn't have.
  */
 
 document.addEventListener("DOMContentLoaded", function () {
+    if (typeof Sortable === "undefined") {
+        console.error("drag_drop.js: SortableJS is not loaded. Add its <script> tag before this file.");
+        return;
+    }
+
     const listColumns = document.querySelectorAll(".list-column");
 
     listColumns.forEach(function (column) {
-        // TODO (Person 4): initialize Sortable on `column` here
-        // new Sortable(column, {
-        //     group: "cards",
-        //     animation: 150,
-        //     onEnd: function (evt) {
-        //         const cardId = evt.item.dataset.cardId;
-        //         const newListId = evt.to.dataset.listId;
-        //
-        //         fetch(`/card/${cardId}/move`, {
-        //             method: "POST",
-        //             headers: { "Content-Type": "application/json" },
-        //             body: JSON.stringify({ new_list_id: newListId }),
-        //         })
-        //             .then((res) => res.json())
-        //             .then((data) => console.log("Card moved:", data))
-        //             .catch((err) => console.error("Move failed:", err));
-        //     },
-        // });
+        new Sortable(column, {
+            group: "cards",
+            animation: 150,
+            draggable: "[data-card-id]",
+            onEnd: handleCardDrop,
+        });
     });
 });
+
+
+function handleCardDrop(evt) {
+    // Dropped back into the same list: nothing changes in the database.
+    if (evt.from === evt.to) {
+        return;
+    }
+
+    const cardId = evt.item.dataset.cardId;
+    const newListId = evt.to.dataset.listId;
+
+    if (!cardId || !newListId) {
+        console.error("drag_drop.js: missing data-card-id or data-list-id in the HTML.");
+        revertMove(evt);
+        return;
+    }
+
+    fetch(`/card/${cardId}/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ new_list_id: newListId }),
+    })
+        .then(function (res) {
+            if (!res.ok) {
+                throw new Error(`Server responded with status ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(function (data) {
+            if (!data.success) {
+                throw new Error("Server did not confirm the move");
+            }
+            console.log("Card moved:", cardId, "->", newListId);
+        })
+        .catch(function (err) {
+            console.error("Move failed, putting the card back:", err);
+            revertMove(evt);
+        });
+}
+
+
+// Put the card back in its original list, at its original position.
+function revertMove(evt) {
+    const originalList = evt.from;
+    const elementAtOldPosition = originalList.children[evt.oldIndex] || null;
+    originalList.insertBefore(evt.item, elementAtOldPosition);
+}
