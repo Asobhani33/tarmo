@@ -1,22 +1,14 @@
-<!--
-board.html
------------
-Owner: Person 3 (design) — the main board view: lists as columns, cards
-inside each list. This is where the drag-and-drop (Person 4) attaches.
-
-PLACEHOLDER — `lists` comes from Person 1's view_board() route. Each list's
-cards should be fetched with Person 2's get_cards_for_list(list._id) helper
-(Person 1 will likely pass cards into the template context per list, or you
-call an endpoint - coordinate with Person 1/2 on the exact wiring).
-
-TASK FOR PERSON 3 + PERSON 4:
-    - Style each list as a column (Tailwind flex/grid)
-    - Give each card a `data-card-id="{{ card._id }}"` attribute and each
-      list a `data-list-id="{{ list._id }}"` attribute — Person 4's
-      drag_drop.js needs these to know what moved where
--->
-{% extends "base.html" %} {% block title %}{{ board.name }}{% endblock %} {%
-block content %}
+{# board.html ----------- Owner: Person 3 (design) — the main board view: lists
+as columns, cards inside each list. This is where the drag-and-drop (Person 4)
+attaches. PLACEHOLDER — `lists` comes from Person 1's view_board() route. Each
+list's cards should be fetched with Person 2's get_cards_for_list(list._id)
+helper (Person 1 will likely pass cards into the template context per list, or
+you call an endpoint - coordinate with Person 1/2 on the exact wiring). TASK FOR
+PERSON 3 + PERSON 4: - Style each list as a column (Tailwind flex/grid) - Give
+each card a `data-card-id="{{ card._id }}"` attribute and each list a
+`data-list-id="{{ list._id }}"` attribute — Person 4's drag_drop.js needs these
+to know what moved where #} {% extends "base.html" %} {% block title %}{{
+board.name }}{% endblock %} {% block content %}
 <h1 class="text-2xl font-bold mb-6">{{ board.name }}</h1>
 
 <form
@@ -43,12 +35,21 @@ block content %}
 <div class="flex gap-5 overflow-x-auto pb-4">
   {% for list in lists %}
 
-  <div
-    class="w-72 shrink-0 bg-gray-100 border rounded-xl p-4 shadow-sm"
-    data-list-id="{{ list._id }}"
-  >
+  <div class="w-72 shrink-0 bg-gray-100 border rounded-xl p-4 shadow-sm">
     <h3 class="font-semibold text-lg mb-4">{{ list.name }}</h3>
-    <!-- TODO (Person 2/3): loop over this list's cards here -->
+    <div
+      class="list-column flex flex-col gap-2 min-h-12"
+      data-list-id="{{ list._id }}"
+    >
+      {% for card in list.cards %}
+      <div
+        class="bg-white border rounded-lg p-3 shadow-sm cursor-grab"
+        data-card-id="{{ card._id }}"
+      >
+        {{ card.title }}
+      </div>
+      {% endfor %}
+    </div>
     <form
       class="flex flex-col gap-2 mt-4"
       method="POST"
@@ -74,6 +75,6 @@ block content %}
   </div>
   {% endfor %}
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="{{ url_for('static', filename='js/drag_drop.js') }}"></script>
 {% endblock %}
