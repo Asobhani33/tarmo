@@ -30,88 +30,114 @@ boards_bp = Blueprint("boards", __name__)
 @boards_bp.route("/dashboard")
 @login_required
 def dashboard():
-    """
-    TODO (Person 1): Show all boards for the logged-in user.
-    Steps:
-        1. db = get_db()
-        2. user_id = session["user_id"]
-        3. boards = list(db["boards"].find({"owner_id": ObjectId(user_id)}))
-        4. return render_template("dashboard.html", boards=boards)
-    """
-    pass
+    db = get_db()
+
+    # Find every board where the user is the owner
+    my_boards = list(db.boards.find({"owner_id": session["user_id"]}))
+
+    # Show the dashboard page and pass the boards to it
+    return render_template("dashboard.html", boards=my_boards)
 
 
-@boards_bp.route("/board/create", methods=["POST"])
+# -------------------------------------------------------
+# CREATE BOARD — make a new board
+# -------------------------------------------------------
+@boards_bp.route("/boards/create", methods=["POST"])
 @login_required
 def create_board():
-    """
-    TODO (Person 1): Create a new board.
-    Steps:
-        1. name = request.form.get("name")
-        2. db = get_db()
-        3. db["boards"].insert_one({"name": name, "owner_id": ObjectId(session["user_id"])})
-        4. return redirect(url_for("boards.dashboard"))
-    """
-    pass
+    db = get_db()
+
+    # Get the board title the user typed
+    title = request.form["title"]
+
+    # Save it to the database
+    db.boards.insert_one({
+        "title":    title,
+        "owner_id": session["user_id"]
+    })
+
+    flash("Board created!")
+    return redirect(url_for("boards.dashboard"))
 
 
-@boards_bp.route("/board/<board_id>/delete", methods=["POST"])
-@admin_required
-def delete_board(board_id):
-    """
-    TODO (Person 1): Delete a board and its lists/cards.
-    Steps:
-        1. db = get_db()
-        2. Find all list ids belonging to this board
-        3. Delete all cards whose list_id is in those lists
-        4. Delete all lists belonging to this board
-        5. Delete the board itself: db["boards"].delete_one({"_id": ObjectId(board_id)})
-        6. return redirect(url_for("boards.dashboard"))
-    """
-    pass
-
-
-@boards_bp.route("/board/<board_id>")
+# -------------------------------------------------------
+# VIEW BOARD — open one board and see its lists + cards
+# -------------------------------------------------------
+@boards_bp.route("/boards/<board_id>")
 @login_required
 def view_board(board_id):
-    """
-    TODO (Person 1): Show one board with its lists (cards come from Person 2's
-    cards.py — you can call a helper function they expose, e.g.
-    from routes.cards import get_cards_for_list).
-    Steps:
-        1. db = get_db()
-        2. board = db["boards"].find_one({"_id": ObjectId(board_id)})
-        3. lists = list(db["lists"].find({"board_id": ObjectId(board_id)}).sort("position"))
-        4. return render_template("board.html", board=board, lists=lists)
-    """
-    pass
+    db = get_db()
+
+    # Load the board
+    board = db.boards.find_one({"_id": ObjectId(board_id)})
+
+    # Load all lists that belong to this board, in order
+    lists = list(db.lists.find({"board_id": board_id}).sort("position", 1))
+
+    # For each list, load its cards
+    for one_list in lists:
+        one_list["cards"] = list(db.cards.find({
+            "list_id": str(one_list["_id"]),
+            "archived": {"$ne": True}          # skip archived cards
+        }).sort("position", 1))
+
+    return render_template("board.html", board=board, lists=lists)
 
 
-@boards_bp.route("/board/<board_id>/list/create", methods=["POST"])
+# -------------------------------------------------------
+# DELETE BOARD — remove a board (only the owner can do this)
+# -------------------------------------------------------
+@boards_bp.route("/boards/<board_id>/delete", methods=["POST"])
+@login_required
+def delete_board(board_id):
+    db = get_db()
+
+    # Load the board and check the user is the owner
+    board = db.boards.find_one({"_id": ObjectId(board_id)})
+    if board["owner_id"] != session["user_id"]:
+        flash("Only the owner can delete this board.")
+        return redirect(url_for("boards.dashboard"))
+
+    # Delete the board, its lists, and its cards
+    db.boards.delete_one({"_id": ObjectId(board_id)})
+    db.lists.delete_many({"board_id": board_id})
+    db.cards.delete_many({"board_id": board_id})
+
+    flash("Board deleted.")
+    return redirect(url_for("boards.dashboard"))
+
+
+# -------------------------------------------------------
+# CREATE LIST — add a new column to a board
+# -------------------------------------------------------
+@boards_bp.route("/boards/<board_id>/lists/create", methods=["POST"])
 @login_required
 def create_list(board_id):
-    """
-    TODO (Person 1): Add a new list (column) to a board.
-    Steps:
-        1. name = request.form.get("name")
-        2. db = get_db()
-        3. position = db["lists"].count_documents({"board_id": ObjectId(board_id)})
-        4. db["lists"].insert_one({"board_id": ObjectId(board_id), "name": name, "position": position})
-        5. return redirect(url_for("boards.view_board", board_id=board_id))
-    """
-    pass
+    db = get_db()
+
+    title = request.form["title"]
+
+    # Count existing lists so we know what position to give the new one
+    how_many_lists = db.lists.count_documents({"board_id": board_id})
+
+    db.lists.insert_one({
+        "title":    title,
+        "board_id": board_id,
+        "position": how_many_lists    # goes at the end
+    })
+
+    return redirect(url_for("boards.view_board", board_id=board_id))
 
 
-@boards_bp.route("/list/<list_id>/delete", methods=["POST"])
+# -------------------------------------------------------
+# DELETE LIST — remove a column and all its cards
+# -------------------------------------------------------
+@boards_bp.route("/boards/<board_id>/lists/<list_id>/delete", methods=["POST"])
 @login_required
-def delete_list(list_id):
-    """
-    TODO (Person 1): Delete a list and its cards.
-    Steps:
-        1. db = get_db()
-        2. Find the list to get its board_id (for the redirect)
-        3. db["cards"].delete_many({"list_id": ObjectId(list_id)})
-        4. db["lists"].delete_one({"_id": ObjectId(list_id)})
-        5. return redirect(url_for("boards.view_board", board_id=board_id))
-    """
-    pass
+def delete_list(board_id, list_id):
+    db = get_db()
+
+    db.lists.delete_one({"_id": ObjectId(list_id)})
+    db.cards.delete_many({"list_id": list_id})
+
+    return redirect(url_for("boards.view_board", board_id=board_id))
