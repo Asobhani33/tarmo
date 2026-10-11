@@ -78,3 +78,89 @@ def logout():
         2. return redirect(url_for("auth.login"))
     """
     pass
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from db import get_db
+
+auth_bp = Blueprint("auth", __name__)
+
+
+# -------------------------------------------------------
+# REGISTER — create a new account
+# -------------------------------------------------------
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+
+    # Step 1: If the user just opened the page → show the form
+    if request.method == "GET":
+        return render_template("register.html")
+
+    # Step 2: The user filled in the form and clicked Register
+    db = get_db()
+    username = request.form["username"]
+    password = request.form["password"]
+
+    # Step 3: Is that username already taken?
+    existing_user = db.users.find_one({"username": username})
+    if existing_user:
+        flash("That username is already taken. Try another one.")
+        return redirect(url_for("auth.register"))
+
+    # Step 4: Scramble the password so we never save the real one
+    scrambled_password = generate_password_hash(password)
+
+    # Step 5: Save the new user to the database
+    db.users.insert_one({
+        "username": username,
+        "password": scrambled_password,
+        "role": "member"
+    })
+
+    # Step 6: Done! Send them to the login page
+    flash("Account created! Please log in.")
+    return redirect(url_for("auth.login"))
+
+
+# -------------------------------------------------------
+# LOGIN — enter your account
+# -------------------------------------------------------
+@auth_bp.route("/login", methods=["GET", "POST"])
+def login():
+
+    # Step 1: If the user just opened the page → show the form
+    if request.method == "GET":
+        return render_template("login.html")
+
+    # Step 2: The user filled in the form and clicked Login
+    db = get_db()
+    username = request.form["username"]
+    password = request.form["password"]
+
+    # Step 3: Look up that username in the database
+    user = db.users.find_one({"username": username})
+
+    # Step 4: Does the user exist AND does the password match?
+    if user and check_password_hash(user["password"], password):
+
+        # Step 5: Save who is logged in (like a sticky note)
+        session["user_id"]  = str(user["_id"])
+        session["username"] = user["username"]
+        session["role"]     = user["role"]
+
+        # Step 6: Send them to their dashboard
+        return redirect(url_for("boards.dashboard"))
+
+    # Step 7: Wrong username or password
+    flash("Wrong username or password. Try again.")
+    return redirect(url_for("auth.login"))
+
+
+# -------------------------------------------------------
+# LOGOUT — leave your account
+# -------------------------------------------------------
+@auth_bp.route("/logout")
+def logout():
+    # Throw away the sticky note → user is no longer logged in
+    session.clear()
+    flash("You have been logged out.")
+    return redirect(url_for("auth.login"))
