@@ -187,3 +187,6 @@ This project is designed for learning and practice, planned and maintained by
 the Project Manager. Any change to this README's text or structure, or to
 the project's file structure, or any push/upload to the shared repo, should
 be confirmed with the Project Manager first.
+
+
+V2: see docs/v2/TASKS.md
