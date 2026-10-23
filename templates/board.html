@@ -9,72 +9,250 @@ each card a `data-card-id="{{ card._id }}"` attribute and each list a
 `data-list-id="{{ list._id }}"` attribute — Person 4's drag_drop.js needs these
 to know what moved where #} {% extends "base.html" %} {% block title %}{{
 board.name }}{% endblock %} {% block content %}
-<h1 class="text-2xl font-bold mb-6">{{ board.name }}</h1>
+<div class="min-h-[85vh] rounded-2xl bg-gradient-to-br from-[#EEF3FC] via-[#EAF3FB] to-[#E8F7F7] p-5 sm:p-5">
 
-<form
-  class="flex flex-col sm:flex-row gap-3 mb-8"
-  method="POST"
-  action="{{ url_for('boards.create_list', board_id=board._id) }}"
->
-  <input
-    class="border rounded px-3 py-2 w-full sm:w-64"
-    type="text"
-    name="name"
-    placeholder="New list name"
-    required
-  />
 
-  <button
-    class="bg-blue-800 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
-    type="submit"
-  >
-    Add List
-  </button>
-</form>
 
-<div class="flex gap-5 overflow-x-auto pb-4">
-  {% for list in lists %}
+<div class="flex flex-nowrap items-start gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">    {% for list in lists %}
 
-  <div class="w-72 shrink-0 bg-gray-100 border rounded-xl p-4 shadow-sm">
-    <h3 class="font-semibold text-lg mb-4">{{ list.name }}</h3>
-    <div
-      class="list-column flex flex-col gap-2 min-h-12"
+<div class="shrink-0 w-52 break-words rounded-xl p-2 text-[10px] leading-tight shadow-sm
+    {% if list.name == 'To Do' %}
+        bg-gradient-to-br from-[#A6D9EA] to-[#A8B3EA]
+    {% elif list.name == 'In Progress' %}
+        bg-gradient-to-br from-[#AEE3EA] to-[#AACBF2]
+    {% elif list.name == 'Done' %}
+        bg-gradient-to-br from-[#A3E4CE] to-[#98D0EA]
+    {% else %}
+        bg-gradient-to-br from-[#A6D9EA] to-[#A8B3EA]
+    {% endif %}">
+
+    <h3 class="font-semibold text-sm mb-3 px-1 py-1 text-slate-700">
+        {{ list.name }}
+    </h3> <div
+      class="list-column flex flex-col items-center gap-2 min-h-12"
       data-list-id="{{ list._id }}"
     >
       {% for card in list.cards %}
       <div
-        class="bg-white border rounded-lg p-3 shadow-sm cursor-grab"
-        data-card-id="{{ card._id }}"
-      >
-        {{ card.title }}
-      </div>
+    class="cursor-grab w-[95%] mx-auto rounded-lg border border-slate-200 bg-white px-3 py-3 text-xs font-medium text-slate-700 shadow-sm transition hover:shadow-md hover:border-slate-300"
+    data-card-id="{{ card._id }}"
+>
+{% if card.title == 'Design homepage' %}
+    <span class="mb-2 inline-block rounded-md bg-orange-100 px-2 py-1 text-[10px] font-semibold text-orange-800">
+        Design
+    </span>
+{% elif card.title == 'Set up MongoDB Atlas' %}
+    <span class="mb-2 inline-block rounded-md bg-blue-100 px-2 py-1 text-[10px] font-semibold text-blue-800">
+        Backend
+    </span>
+{% elif card.title == 'Write SCHEMA.md' %}
+    <span class="mb-2 inline-block rounded-md bg-cyan-100 px-2 py-1 text-[10px] font-semibold text-cyan-800">
+        Docs
+    </span>
+{% elif card.title == 'Create GitHub repo' %}
+    <span class="mb-2 inline-block rounded-md bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-800">
+        Dev
+    </span>
+{% endif %}
+
+<div>
+    {{ card.title }}
+</div></div>
       {% endfor %}
     </div>
     <form
-      class="flex flex-col gap-2 mt-4"
+      class="flex flex-col gap-2 mt-3"
       method="POST"
       action="{{ url_for('cards.create_card') }}"
     >
       <input type="hidden" name="list_id" value="{{ list._id }}" />
 
       <input
-        class="border rounded-lg px-3 py-2 w-full"
-        type="text"
+class="w-[90%] mx-auto rounded border focus:border-2 focus:border-blue-300 focus:outline-none border-gray-300 bg-white px-2 py-1 text-xs"        type="text"
         name="title"
         placeholder="New card title"
         required
       />
 
       <button
-        class="w-full bg-blue-800 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
-        type="submit"
+class="self-start text-left px-2 py-1 text-xs text-gray-500 hover:bg-gray-300 rounded transition-colors"        type="submit"
       >
-        Add Card
+      +  Add a card
       </button>
     </form>
   </div>
+  
   {% endfor %}
+<div class="shrink-0 w-44">
+  <button
+  type="button"
+  class="group flex min-h-12 w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-white/40 px-3 py-4 text-slate-500 transition duration-200 hover:border-sky-400 hover:bg-sky-50/70 hover:text-slate-700"
+>
+  <span
+    class="flex h-3 w-3 items-center justify-center rounded-full bg-white/70 text-xl transition group-hover:bg-sky-100"
+    aria-hidden="true"
+  >
+    +
+  </span>
+
+  <span class="text-sm font-medium">
+    Add another list
+  </span>
+
+</button>
 </div>
+</div>
+
+
+<!-- Fake checklist preview -->
+<section class="mt-8 w-full max-w-sm rounded-xl bg-linear-to-br from-[#C9C2F0] via-[#B8C4F2] to-[#A9D4F0] p-3 shadow-md ring-1 ring-white/70">
+  <!-- Header -->
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="text-sm font-semibold text-slate-700">
+      Checklist
+    </h2>
+
+    <span class="px-2 py-1 text-xs rounded border border-slate-500/40 text-slate-600">
+      Delete
+    </span>
+  </div>
+
+  <!-- Progress -->
+  <div class="mb-3">
+  <div class="mb-1 flex items-center justify-between text-xs text-slate-600">
+    <span id="progress-text">40%</span>
+    <span id="badge">2/5</span>
+  </div>
+
+  <div class="h-1.5 w-full overflow-hidden rounded-full bg-white/60">
+        <div
+      id="bar"
+      class="h-full rounded-full bg-linear-to-r from-[#5B6FE0] to-[#7E8FE6] transition-all duration-300"
+      style="width: 40%"
+    ></div>
+  </div>
+</div>
+
+
+  <!-- Fake checklist items -->
+  <div id="checklist" class="flex flex-col gap-2 rounded-lg bg-white p-3 shadow-sm">
+
+    <label class="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+      <input type="checkbox" class="accent-[#5B6FE0]" checked />
+      <span class="text-gray-400 line-through">
+        Create project structure
+      </span>
+    </label>
+
+    <label class="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+      <input type="checkbox" class="accent-[#5B6FE0]" checked />
+      <span class="text-gray-400 line-through">
+        Build board layout
+      </span>
+    </label>
+
+    <label class="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+      <input type="checkbox" class="accent-[#5B6FE0]" />
+      <span>Style task cards</span>
+    </label>
+
+    <label class="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+      <input type="checkbox" class="accent-[#5B6FE0]" />
+      <span>Test drag and drop</span>
+    </label>
+
+    <label class="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+      <input type="checkbox" class="accent-[#5B6FE0]" />
+      <span>Review with the team</span>
+    </label>
+
+  </div>
+
+  <!-- Add item form -->
+  <form id="checklist-form" class="mt-3 flex gap-2">
+
+    <input
+      type="text"
+      name="text"
+      placeholder="Add an item..."
+      class="min-w-0 flex-1 rounded-md border border-transparent bg-white px-2 py-1 text-xs text-gray-800 placeholder:text-gray-400 focus:border-2 focus:border-white focus:outline-none"
+    />
+
+    <button
+      type="submit"
+class="self-start text-left px-2 py-1 text-xs text-slate-700 hover:bg-white/40 rounded transition-colors shadow-sm"    >
+      Add
+    </button>
+
+  </form>
+
+</section>
+<script>
+  const checklist = document.getElementById("checklist");
+  const bar = document.getElementById("bar");
+  const badge = document.getElementById("badge");
+  const progressText = document.getElementById("progress-text");
+
+  function updateChecklistProgress() {
+    const checkboxes = checklist.querySelectorAll(
+      'input[type="checkbox"]'
+    );
+
+    const total = checkboxes.length;
+    const done = checklist.querySelectorAll(
+      'input[type="checkbox"]:checked'
+    ).length;
+
+    const percent = total === 0
+      ? 0
+      : Math.round((done / total) * 100);
+
+    badge.textContent = `${done}/${total}`;
+    progressText.textContent = `${percent}%`;
+    bar.style.width = `${percent}%`;
+
+    checkboxes.forEach((checkbox) => {
+      const text = checkbox.parentElement.querySelector("span");
+
+      text.classList.toggle("line-through", checkbox.checked);
+      text.classList.toggle("text-gray-400", checkbox.checked);
+    });
+  }
+
+  checklist.addEventListener("change", updateChecklistProgress);
+  const checklistForm = document.getElementById("checklist-form");
+
+checklistForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const input = checklistForm.querySelector('input[name="text"]');
+  const itemText = input.value.trim();
+
+  if (itemText === "") {
+    return;
+  }
+
+  const label = document.createElement("label");
+  label.className =
+    "flex cursor-pointer items-center gap-2 text-xs text-gray-700";
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+checkbox.className = "accent-[#5B6FE0]";
+  const span = document.createElement("span");
+  span.textContent = itemText;
+
+  label.append(checkbox, span);
+  checklist.append(label);
+
+  input.value = "";
+
+  updateChecklistProgress();
+});
+
+  updateChecklistProgress();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="{{ url_for('static', filename='js/drag_drop.js') }}"></script>
+</div>
 {% endblock %}
