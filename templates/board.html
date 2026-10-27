@@ -128,8 +128,10 @@ class="self-start text-left px-2 py-1 text-xs text-gray-500 hover:bg-gray-300 ro
 
 
 <!-- Fake checklist preview -->
-<section class="mt-8 w-full max-w-sm rounded-xl bg-linear-to-br from-[#C9C2F0] via-[#B8C4F2] to-[#A9D4F0] p-3 shadow-md ring-1 ring-white/70">
-  <!-- Header -->
+<div class="mt-8 w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-200 md:grid md:grid-cols-[1fr_320px]">
+<div class="p-5">
+<section class="w-full rounded-xl bg-linear-to-br from-[#C9C2F0] via-[#B8C4F2] to-[#A9D4F0] p-3 shadow-md ring-1 ring-white/70">  <!-- Header -->
+  
   <div class="mb-3 flex items-center justify-between">
     <h2 class="text-sm font-semibold text-slate-700">
       Checklist
@@ -209,6 +211,64 @@ class="self-start text-left px-2 py-1 text-xs text-slate-700 hover:bg-white/40 r
   </form>
 
 </section>
+</div>
+<!-- Comments & Activity Panel -->
+<aside class="flex flex-col border-t border-slate-200 bg-slate-50 p-5 md:min-h-[480px] md:border-l md:border-t-0">  <h2 class="mb-3 text-sm font-semibold text-slate-800">
+    Comments and activity
+  </h2>
+
+  <!-- Comment form (on top) -->
+  <form id="comment-form" class="mb-4 flex items-start gap-2">
+        <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white">
+      MA
+    </div>
+    <div class="min-w-0 flex-1">
+      <textarea
+        name="comment"
+        rows="3"
+        placeholder="Write a comment"
+        class="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+        required
+      ></textarea>
+            <button
+        type="submit"
+        class="mt-2 rounded-md bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-indigo-700"
+      >
+        Save
+      </button>
+    </div>
+  </form>
+
+   <!-- Timeline: newest first -->
+  <div id="timeline" class="flex max-h-72 flex-1 flex-col gap-3 overflow-y-auto">
+    <p id="timeline-empty" class="hidden py-4 text-center text-sm text-slate-400">
+      No comments yet. Be the first to comment.
+    </p>
+
+    
+
+    <!-- Example comment -->
+    <div data-comment class="flex items-start gap-2">
+      <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-[10px] font-semibold text-white">
+        SI
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-xs text-slate-500">
+          <span class="font-semibold text-slate-700">Silenat</span> 2 h ago
+        </p>
+        <div class="mt-1 inline-block max-w-full break-words rounded-lg bg-white px-3 py-1.5 text-sm text-slate-600 ring-1 ring-slate-200">
+          API for this card is ready.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity (grey text) -->
+    <div class="mt-4 flex flex-col gap-1 border-t border-slate-200 pt-3 text-xs text-slate-500">
+    <p><span class="font-semibold text-slate-700">Mamur</span> created the board</p>
+  </div>
+</aside></div>
+
 <script>
   const checklist = document.getElementById("checklist");
   const bar = document.getElementById("bar");
@@ -272,6 +332,53 @@ checkbox.className = "accent-[#5B6FE0]";
 });
 
   updateChecklistProgress();
+    // Comments panel
+  const commentForm = document.getElementById("comment-form");
+  const timeline = document.getElementById("timeline");
+  const timelineEmpty = document.getElementById("timeline-empty");
+
+  function updateTimelineEmpty() {
+    const hasComments = timeline.querySelector("[data-comment]") !== null;
+    timelineEmpty.classList.toggle("hidden", hasComments);
+  }
+
+  commentForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const textarea = commentForm.querySelector("textarea");
+    const text = textarea.value.trim();
+    if (text === "") return;
+
+    const row = document.createElement("div");
+    row.dataset.comment = "";
+    row.className = "flex items-start gap-2";
+
+    const avatar = document.createElement("div");
+    avatar.className =
+      "flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-semibold text-white";
+    avatar.textContent = "MA";
+
+    const body = document.createElement("div");
+    body.className = "min-w-0 flex-1";
+
+    const meta = document.createElement("p");
+    meta.className = "text-xs text-slate-500";
+    meta.innerHTML = '<span class="font-semibold text-slate-700">Mamur</span> just now';
+
+    const bubble = document.createElement("div");
+    bubble.className =
+      "mt-1 inline-block max-w-full break-words rounded-lg bg-white px-3 py-1.5 text-sm text-slate-600 ring-1 ring-slate-200";
+    bubble.textContent = text;
+
+    body.append(meta, bubble);
+    row.append(avatar, body);
+
+    timeline.prepend(row); // newest first
+    textarea.value = "";
+    updateTimelineEmpty();
+  });
+
+  updateTimelineEmpty();
 
   // Show checklist badges only when the checklist has items.
 document.querySelectorAll(".checklist-badge").forEach((badge) => {
