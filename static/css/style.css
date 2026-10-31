@@ -15,8 +15,6 @@ body {
 }
 
 header {
-    padding: 12px 20px;
-    background: #f1f1f1;
     display: flex;
     gap: 16px;
     align-items: center;
@@ -32,8 +30,6 @@ main {
 }
 
 .list-column {
-    background: #f4f4f4;
-    padding: 12px;
-    border-radius: 8px;
-    min-width: 220px;
+border-radius: 8px;
 }
+

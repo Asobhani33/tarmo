@@ -9,32 +9,46 @@ reads request.form["username"] / request.form["password"]).
 -->
 {% extends "base.html" %} {% block title %}Login{% endblock %} {% block content
 %}
-<h1 class="text-2xl">Login</h1>
-<form
-  class="flex flex-col gap-3 max-w-sm mt-4"
-  method="POST"
-  action="{{ url_for('auth.login') }}"
->
-  <label>Username</label>
-  <input class="border rounded-md p-2" type="text" name="username" required />
+<div class="min-h-[60vh] flex items-center justify-center px-4">
 
-  <label>Password</label>
-  <input
-    class="border rounded-md p-2"
-    type="password"
-    name="password"
-    required
-  />
+  <div class="w-full max-w-[380px] rounded-2xl bg-gradient-to-br from-[#DCE7F8] via-[#D5E7F8] to-[#D1F0F0] p-6 shadow-sm flex flex-col items-center">
 
-  <button
-    class="bg-blue-800 text-white font-semibold px-4 py-2 rounded-lg"
-    type="submit"
-  >
-    Log In
-  </button>
-</form>
-<p>
-  No account?
-  <a class="text-blue-800" href="{{ url_for('auth.register') }}">Register</a>
-</p>
+    <h1 class="text-xl font-semibold text-slate-800 mb-4">Login</h1>
+
+    <form
+      class="flex flex-col gap-2 w-full items-center"
+      method="POST"
+      action="{{ url_for('auth.login') }}"
+    >
+      <input
+        class="w-[85%] rounded-xl border border-white/80 bg-white/75 px-4 py-1.5 text-sm text-slate-800 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-sky-300"
+        type="text"
+        name="username"
+        placeholder="Username"
+        required
+      />
+
+      <input
+        class="w-[85%] rounded-xl border border-white/80 bg-white/75 px-4 py-1.5 text-sm text-slate-800 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-sky-300"
+        type="password"
+        name="password"
+        placeholder="Password"
+        required
+      />
+
+      <button
+        class="w-[85%] mt-4 rounded-xl text-center text-sm font-semibold text-slate-800 px-4 py-1.5 bg-gradient-to-r from-[#8FC8E8] to-[#9AA8EA] hover:from-[#7FBCE2] hover:to-[#8A99E4] transition"
+        type="submit"
+      >
+        Log In
+      </button>
+    </form>
+
+    <p class="mt-4 text-sm text-slate-600">
+      No account?
+      <a class="font-medium text-[#003f8a] hover:text-[#0072e5] transition" href="{{ url_for('auth.register') }}">Register</a>
+    </p>
+
+  </div>
+</div>
 {% endblock %}
