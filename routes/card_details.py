@@ -13,11 +13,13 @@ TASKS FOR PERSON 2:
     4. add_comment()          -> add a comment to a card
 """
 
-from flask import Blueprint, request, redirect, url_for
+from datetime import UTC, datetime
+
 from bson import ObjectId
-from datetime import datetime
-from db import get_db
+from flask import Blueprint, redirect, request, session, url_for
+
 from auth.decorators import login_required
+from db import get_db
 
 card_details_bp = Blueprint("card_details", __name__)
 
@@ -37,7 +39,20 @@ def add_label(card_id):
            )
         5. Redirect back to the board
     """
-    pass
+    name = request.form.get("label_name")
+    color = request.form.get("label_color")
+    db = get_db()
+    card = db["cards"].find_one({"_id": ObjectId(card_id)})
+    task_list = db["lists"].find_one({"_id": card["list_id"]})
+
+    db["cards"].update_one(
+        {"_id": ObjectId(card_id)},
+        {"$set": {"label": {"name": name, "color": color}}}
+    )
+
+    return redirect(
+        url_for("boards.view_board", board_id=str(task_list["board_id"]))
+    )
 
 
 @card_details_bp.route("/card/<card_id>/due-date", methods=["POST"])
@@ -51,7 +66,19 @@ def set_due_date(card_id):
         3. db["cards"].update_one({"_id": ObjectId(card_id)}, {"$set": {"due_date": due_date}})
         4. Redirect back to the board
     """
-    pass
+    due_date = request.form.get("due_date")
+    db = get_db()
+    card = db["cards"].find_one({"_id": ObjectId(card_id)})
+    task_list = db["lists"].find_one({"_id": card["list_id"]})
+
+    db["cards"].update_one(
+        {"_id": ObjectId(card_id)},
+        {"$set": {"due_date": due_date}}
+    )
+
+    return redirect(
+        url_for("boards.view_board", board_id=str(task_list["board_id"]))
+    )
 
 
 @card_details_bp.route("/card/<card_id>/assign", methods=["POST"])
@@ -68,7 +95,19 @@ def assign_member(card_id):
            )
         4. Redirect back to the board
     """
-    pass
+    user_id = request.form.get("user_id")
+    db = get_db()
+    card = db["cards"].find_one({"_id": ObjectId(card_id)})
+    task_list = db["lists"].find_one({"_id": card["list_id"]})
+
+    db["cards"].update_one(
+        {"_id": ObjectId(card_id)},
+        {"$set": {"assigned_to": ObjectId(user_id)}}
+    )
+
+    return redirect(
+        url_for("boards.view_board", board_id=str(task_list["board_id"]))
+    )
 
 
 @card_details_bp.route("/card/<card_id>/comment", methods=["POST"])
@@ -90,4 +129,21 @@ def add_comment(card_id):
            )
         5. Redirect back to the board
     """
-    pass
+    text = request.form.get("text")
+    author = session.get("username")
+    db = get_db()
+    card = db["cards"].find_one({"_id": ObjectId(card_id)})
+    task_list = db["lists"].find_one({"_id": card["list_id"]})
+
+    db["cards"].update_one(
+        {"_id": ObjectId(card_id)},
+        {"$push": {"comments": {
+            "author": author,
+            "text": text,
+            "created_at": datetime.now(UTC).isoformat()
+        }}}
+    )
+
+    return redirect(
+        url_for("boards.view_board", board_id=str(task_list["board_id"]))
+    )
