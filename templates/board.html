@@ -57,7 +57,30 @@ board.name }}{% endblock %} {% block content %}
 
 <div>
     {{ card.title }}
-</div></div>
+</div>
+
+
+<!-- Card badges -->
+<div class="mt-2 flex flex-wrap items-center gap-1">
+    <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-[10px] text-slate-600">
+        <span aria-hidden="true">📅</span>
+        Oct 30
+    </span>
+
+    <span class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-[10px] text-slate-600">
+        <span aria-hidden="true">💬</span>
+        3
+    </span>
+
+    <span
+    class="checklist-badge hidden items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-[10px] text-slate-600"
+>
+    <span aria-hidden="true">☑</span>
+    <span class="checklist-count">2/5</span>
+</span>
+</div>
+</div>
+
       {% endfor %}
     </div>
     <form
@@ -121,8 +144,7 @@ class="self-start text-left px-2 py-1 text-xs text-gray-500 hover:bg-gray-300 ro
   <div class="mb-3">
   <div class="mb-1 flex items-center justify-between text-xs text-slate-600">
     <span id="progress-text">40%</span>
-    <span id="badge">2/5</span>
-  </div>
+<span id="checklist-progress-count">2/5</span>  </div>
 
   <div class="h-1.5 w-full overflow-hidden rounded-full bg-white/60">
         <div
@@ -190,8 +212,7 @@ class="self-start text-left px-2 py-1 text-xs text-slate-700 hover:bg-white/40 r
 <script>
   const checklist = document.getElementById("checklist");
   const bar = document.getElementById("bar");
-  const badge = document.getElementById("badge");
-  const progressText = document.getElementById("progress-text");
+const badge = document.getElementById("checklist-progress-count");  const progressText = document.getElementById("progress-text");
 
   function updateChecklistProgress() {
     const checkboxes = checklist.querySelectorAll(
@@ -251,6 +272,25 @@ checkbox.className = "accent-[#5B6FE0]";
 });
 
   updateChecklistProgress();
+
+  // Show checklist badges only when the checklist has items.
+document.querySelectorAll(".checklist-badge").forEach((badge) => {
+    const count = badge.querySelector(".checklist-count").textContent;
+    const match = count.match(/^(\d+)\s*\/\s*(\d+)$/);
+
+    if (!match) return;
+
+    const total = Number(match[2]);
+
+    if (total > 0) {
+        badge.classList.remove("hidden");
+        badge.classList.add("inline-flex");
+    } else {
+        badge.classList.add("hidden");
+        badge.classList.remove("inline-flex");
+    }
+});
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="{{ url_for('static', filename='js/drag_drop.js') }}"></script>
