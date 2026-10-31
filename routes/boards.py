@@ -18,8 +18,7 @@ Every route here follows the same pattern:
 This is the same "load -> change -> save -> return" pattern from the
 Library project, just using MongoDB instead of a JSON file.
 """
-
-from flask import Blueprint, request, session, redirect, url_for, render_template
+from flask import Blueprint, request, session, redirect, url_for, render_template, flash
 from bson import ObjectId
 from db import get_db
 from auth.decorators import login_required, admin_required
@@ -47,12 +46,12 @@ def dashboard():
 def create_board():
     db = get_db()
 
-    # Get the board title the user typed
-    title = request.form["title"]
+    # Get the board name the user typed
+    name = request.form["name"]
 
     # Save it to the database
     db.boards.insert_one({
-        "title":    title,
+        "name":    name,
         "owner_id": session["user_id"]
     })
 
@@ -115,13 +114,13 @@ def delete_board(board_id):
 def create_list(board_id):
     db = get_db()
 
-    title = request.form["title"]
+    name = request.form["name"]
 
     # Count existing lists so we know what position to give the new one
     how_many_lists = db.lists.count_documents({"board_id": board_id})
 
     db.lists.insert_one({
-        "title":    title,
+        "name":    name,
         "board_id": board_id,
         "position": how_many_lists    # goes at the end
     })
