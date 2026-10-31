@@ -1,4 +1,24 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+"""
+routes/boards.py
+------------------
+Owner: Person 1
+
+Boards, lists, and the multi-board dashboard.
+
+TASKS FOR PERSON 1:
+    1. dashboard()      -> show all boards belonging to the logged-in user
+    2. create_board()   -> make a new board
+    3. delete_board()   -> remove a board (admin only)
+    4. view_board()     -> show one board with its lists and cards
+    5. create_list()    -> add a new list (column) to a board
+    6. delete_list()    -> remove a list
+
+Every route here follows the same pattern:
+    load data from Mongo -> (change it if needed) -> return/render a page
+This is the same "load -> change -> save -> return" pattern from the
+Library project, just using MongoDB instead of a JSON file.
+"""
+from flask import Blueprint, request, session, redirect, url_for, render_template, flash
 from bson import ObjectId
 from db import get_db
 from auth.decorators import login_required, board_access_required, owner_required, get_role
@@ -37,11 +57,11 @@ def dashboard():
 @login_required
 def create_board():
     db = get_db()
-    title = request.form["title"]
+    name = request.form["name"]
     user_id = session["user_id"]
 
     db.boards.insert_one({
-        "title": title,
+        "name": name,
         "members": [
             {"user_id": user_id, "role": "owner"}
         ]
@@ -115,12 +135,12 @@ def delete_board(board_id):
 @board_access_required
 def create_list(board_id):
     db = get_db()
-    title = request.form["title"]
+    name = request.form["name"]
 
     how_many_lists = db.lists.count_documents({"board_id": board_id})
 
     db.lists.insert_one({
-        "title": title,
+        "name": name,
         "board_id": board_id,
         "position": how_many_lists
     })

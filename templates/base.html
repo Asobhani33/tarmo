@@ -25,14 +25,48 @@ TASK FOR PERSON 3:
       href="{{ url_for('static', filename='css/style.css') }}"
     />
   </head>
-  <body>
-    <header class="flex items-center justify-between px-8 py-4">
-      <strong class="text-2xl font-semibold">Tarmo</strong>
-      <nav class="flex items-center gap-8">
-        <a href="{{ url_for('boards.dashboard') }}">Dashboard</a>
-      </nav>
-      <a href="{{ url_for('auth.logout') }}">Logout</a>
-    </header>
+  <body class="min-h-screen bg-gradient-to-br from-[#EEF3FC] via-[#EAF3FB] to-[#E8F7F7]">   
+<header class="flex items-center bg-transparent px-2 py-0.5">
+<a href="{{ url_for('boards.dashboard') }}"
+   class="mr-8 flex items-center gap-2 text-xl font-semibold no-underline">
+  <svg
+    class="h-6 w-6 shrink-0"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="url(#logo-gradient)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <defs>
+      <linearGradient id="logo-gradient" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#1F5FB5" />
+<stop offset="100%" stop-color="#5B6FE0" />
+      </linearGradient>
+    </defs>
+    <rect x="2.5" y="3" width="7" height="15" rx="1.5" />
+    <rect x="13" y="3" width="8.5" height="10" rx="1.5" />
+  </svg>
+<span class="bg-linear-to-r from-[#1F5FB5] to-[#5B6FE0] bg-clip-text text-transparent">Tarmo</span></a>
+
+        <nav class="flex items-center gap-5">
+        <a class="text-slate-700 hover:text-[#1F5FB5] transition" href="{{ url_for('boards.dashboard') }}">
+            Dashboard
+        </a>
+
+        {% if board is defined %}
+        <span class="text-slate-900 font-medium border-l border-slate-300 pl-5">
+            {{ board.name }}
+        </span>
+        {% endif %}
+    </nav>
+
+    <a class="ml-auto text-slate-700 hover:text-[#1F5FB5] transition" href="{{ url_for('auth.logout') }}">
+        Logout
+    </a>
+</header>
+
 
     <main>{% block content %}{% endblock %}</main>
   </body>

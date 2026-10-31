@@ -1,51 +1,99 @@
-<!--
-dashboard.html
----------------
-Owner: Person 3 (design) — shows boards prepared by Person 1's dashboard() route
 
-PLACEHOLDER — `boards` is a list of board documents from Mongo, each with
-a "name" and "_id". Loop over them and link each to its board page.
--->
-{% extends "base.html" %} {% block title %}Dashboard{% endblock %} {% block
-content %}
-<h1 class="text-2xl font-bold mb-6">Your Boards</h1>
-<p class="font-medium mb-2">Create a new board</p>
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<section class="min-h-[85vh] rounded-2xl bg-gradient-to-br from-[#EEF3FC] via-[#EAF3FB] to-[#E8F7F7] p-5 sm:p-5">
+
+    <!-- Dashboard heading -->
+    <header class="mb-[28px] flex flex-col items-start gap-[6px]">
+        <h1 class="text-[30px] font-bold leading-tight text-slate-800">
+            Your Boards
+        </h1>
+
+        <p class="text-[16px] leading-5 text-slate-600">
+            Organize your work and keep your tasks moving.
+        </p>
+    </header>
+
+    <!-- Create a new board -->
+    
 <form
-  class="flex gap-3 mb-8"
-  method="POST"
-  action="{{ url_for('boards.create_board') }}"
+    class="mb-[28px] flex w-fit items-center gap-[6px] rounded-xl border border-white/80 bg-white/75 p-[4px] shadow-sm backdrop-blur-sm"
+    method="POST"
+    action="{{ url_for('boards.create_board') }}"
 >
-  <input
-    class="border rounded px-3 py-2"
-    type="text"
-    name="name"
-    placeholder="New board name"
-    required
-  />
-  <button
-    class="bg-blue-800 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition"
-    type="submit"
-  >
-    Create Board
-  </button>
+    <input
+        class="min-w-0 flex-none w-[155px] rounded-lg bg-transparent px-[8px] py-[3px] text-[13px] leading-5 text-slate-800 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-300"
+        type="text"
+        name="name"
+        placeholder="Create a new board..."
+        required
+    >
+
+    <button
+        type="submit"
+        class="inline-flex shrink-0 items-center gap-[1px] rounded-lg bg-gradient-to-r from-[#8FC8E8] to-[#9AA8EA] px-[10px] py-[4px] text-[11px] font-semibold text-slate-800 transition hover:from-[#7FBCE2] hover:to-[#8A99E4] focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2"
+    >
+        <span class="text-[14px] leading-none">+</span>
+        <span>Create</span>
+    </button>
 </form>
 
-<div class="flex flex-wrap gap-5">
-  {% for board in boards %}
 
-  <div
-    class="w-72 bg-white border rounded-xl p-5 min-h-32 hover:shadow-lg hover:-translate-y-1 transition"
-  >
-    <a
-      href="{{ url_for('boards.view_board', board_id=board._id) }}"
-      class="text-lg font-semibold hover:text-blue-600"
-    >
-      {{ board.name }}
-    </a>
+    <!-- Projects heading -->
+    <div class="mb-[12px]">
+        <h2 class="text-[22px] font-semibold text-slate-800">
+            Your Projects
+        </h2>
+    </div>
 
-    <p class="text-gray-500 mt-2">Board</p>
-  </div>
+    <!-- Boards list -->
+    <div class="flex flex-wrap gap-2">
 
-  {% endfor %}
-</div>
+        {% for board in boards %}
+
+               <a
+            href="{{ url_for('boards.view_board', board_id=board._id) }}"
+            class="group flex min-h-16 w-52 items-center justify-between rounded-xl border border-white/60 p-2 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-2
+            {% if loop.index0 % 3 == 0 %}
+                bg-gradient-to-r from-[#A6D9EA] to-[#A8B3EA]
+            {% elif loop.index0 % 3 == 1 %}
+                bg-gradient-to-r from-[#AEE3EA] to-[#AACBF2]
+            {% else %}
+                bg-gradient-to-r from-[#A3E4CE] to-[#98D0EA]
+            {% endif %}"
+        >
+            <h3 class="min-w-0 truncate text-sm font-semibold text-slate-700">
+                {{ board.name }}
+            </h3>
+
+            <span
+                class="ml-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/50 text-sm text-slate-700 transition group-hover:bg-white/80"
+                aria-hidden="true"
+            >
+                →
+            </span>
+        </a>
+
+        {% else %}
+
+        <div class="w-full rounded-xl border border-white/70 bg-white/60 p-5 text-center">
+            <p class="font-medium text-slate-700">
+                No boards yet
+            </p>
+
+            <p class="mt-2 text-sm text-slate-500">
+                Create your first board to get started.
+            </p>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
 {% endblock %}

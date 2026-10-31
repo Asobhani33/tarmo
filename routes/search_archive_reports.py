@@ -36,7 +36,17 @@ def search_cards(board_id):
            })
         4. render_template("search_results.html", cards=results, board_id=board_id)
     """
-    pass
+    keyword = request.args.get("q", "")
+    db = get_db()
+    task_lists = list(db["lists"].find({"board_id": board_id}))
+    list_ids = [task_list["_id"] for task_list in task_lists]
+    results = list(db["cards"].find({
+        "list_id": {"$in": list_ids},
+        "title": {"$regex": keyword, "$options": "i"}
+    }))
+    return render_template(
+        "search_results.html", cards=results, board_id=board_id
+    )
 
 
 @reports_bp.route("/card/<card_id>/archive", methods=["POST"])
@@ -49,7 +59,17 @@ def archive_card(card_id):
         2. db["cards"].update_one({"_id": ObjectId(card_id)}, {"$set": {"archived": True}})
         3. Redirect back to the board
     """
-    pass
+    db = get_db()
+    card = db["cards"].find_one({"_id": ObjectId(card_id)})
+    task_list = db["lists"].find_one({"_id": card["list_id"]})
+    db["cards"].update_one(
+        {"_id": ObjectId(card_id)},
+        {"$set": {"archived": True}}
+    )
+
+    return redirect(
+        url_for("boards.view_board", board_id=str(task_list["board_id"]))
+    )
 
 
 @reports_bp.route("/board/<board_id>/archived")
@@ -62,7 +82,17 @@ def view_archived(board_id):
         2. Find list_ids for the board, then cards with those list_ids AND archived=True
         3. render_template("archived.html", cards=results, board_id=board_id)
     """
-    pass
+    db = get_db()
+    task_lists = list(db["lists"].find({"board_id": board_id}))
+    list_ids = [task_list["_id"] for task_list in task_lists]
+    results = list(db["cards"].find({
+        "list_id": {"$in": list_ids},
+        "archived": True
+    }))
+
+    return render_template(
+        "archived.html", cards=results, board_id=board_id
+    )
 
 
 @reports_bp.route("/board/<board_id>/stats")
@@ -77,4 +107,14 @@ def board_stats(board_id):
         4. total = sum of all counts
         5. render_template("stats.html", lists=lists, total=total)
     """
-    pass
+    db = get_db()
+    task_lists = list(db["lists"].find({"board_id": board_id}))
+
+    for task_list in task_lists:
+        task_list["card_count"] = db["cards"].count_documents({
+            "list_id": task_list["_id"],
+            "archived": False
+        })
+
+    total = sum(task_list["card_count"] for task_list in task_lists)
+    return render_template("stats.html", lists=task_lists, total=total)

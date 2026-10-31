@@ -19,7 +19,7 @@ def create_card(list_id):
     how_many_cards = db.cards.count_documents({"list_id": list_id})
 
     db.cards.insert_one({
-        "title": title,
+        "name": name,
         "list_id": list_id,
         "board_id": board_id,
         "position": how_many_cards
