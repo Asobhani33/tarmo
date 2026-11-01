@@ -75,3 +75,56 @@ def test_connection():
 
 if __name__ == "__main__":
     test_connection()
+
+
+# ---------------------------------------------------------------------------
+# V2 helper functions (Person 4, task A2)
+# ---------------------------------------------------------------------------
+from bson import ObjectId
+from datetime import datetime, timezone
+
+
+def _oid(value):
+    """Return an ObjectId, whether we got a string or already an ObjectId."""
+    return value if isinstance(value, ObjectId) else ObjectId(value)
+
+
+def toggle_checklist_item(db, card_id, item_id):
+    """
+    Flip "done" of one checklist item.
+    Returns the new value (True / False), or None if the card or item is missing.
+    """
+    card = db["cards"].find_one({"_id": _oid(card_id), "checklist.id": item_id})
+    if card is None:
+        return None
+    item = next(i for i in card["checklist"] if i["id"] == item_id)
+    new_value = not item["done"]
+    db["cards"].update_one(
+        {"_id": card["_id"], "checklist.id": item_id},
+        {"$set": {"checklist.$.done": new_value}},
+    )
+    return new_value
+
+
+def boards_for_user(db, user_id):
+    """
+    All boards where the user is a member (owner or member).
+    members.user_id is stored as a string, like session["user_id"].
+    """
+    return list(db["boards"].find({"members.user_id": str(user_id)}))
+
+
+def add_comment_db(db, card_id, user_id, author, text):
+    """
+    Add a comment to a card. Returns True when a card was changed.
+    """
+    result = db["cards"].update_one(
+        {"_id": _oid(card_id)},
+        {"$push": {"comments": {
+            "user_id": str(user_id),
+            "author": author,
+            "text": text,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }}},
+    )
+    return result.modified_count == 1
